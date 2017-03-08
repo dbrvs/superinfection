@@ -4,8 +4,8 @@
 # date started = 2016 Apr 29
 
 ## requires 2 helper files
-source('mk_matind.R') # all possible combinations that admit Robs
-source('mk_matposs.R') #number of ways to split up n samples to get the the sizes of the numbers of strains observed
+source('mk_matind.R') # enumerate possible combinations that admit Robs
+source('mk_matposs.R') # enumerate ways to split up n samples to get the the sizes of the numbers of strains observed
 
 explam <- function(lam) { lam/(1-exp(-lam)) } #average of ero-truncated poisson distribution
 
@@ -102,11 +102,10 @@ EM_superinfection_anym <- function(n,vecn,alpha) {
     ##    then pick the one that makes left and ride sides closest
     lamcurr <- lamtry[abs(lamtest-lside)==min(abs(lamtest-lside))]
     cat("ntries=",ntries,'\n')
-    print(round(condprobs[1:4,],2)) ; print(lamcurr)
+    #print(round(condprobs[1:4,],2)) ; print(lamcurr)
   }  ## end while loop
   ## compute expected infection pp and probability of superinf
   expectr <- lamcurr/(1-exp(-lamcurr))
-  ## p(super) = p(r>=2) = 1 - p(r=1)
   psuper <- 1 - lamcurr/(exp(lamcurr)-1)
   list(lamcurr=lamcurr,expectr=expectr,psuper=psuper,condprobs=condprobs)  
 } ## end of function
