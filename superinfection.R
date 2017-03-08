@@ -1,55 +1,36 @@
-## author = amalia magaret
-## date started = 2016 Apr 29
-
-## objective = build EM algorithm for determining number of true
-## infections from participants who got m samples each
-## this version adds allowance that the strains 
-## are not evenly present, that their prevalence or at
-## least the probability of detection decreases exponentially
-## with setting alpha = 2
-## it also allows n = number of samples drawn to be be treated generally 
-## rather than specifically
-## using n as an input rather than a separate formula for each 
+## this script builds the EM algorithm for determining number of true infections from participants who got m samples each, including uneven strain prevalence baesd on exponential ##
+# author = amalia magaret
+# contributor = dbr
+# date started = 2016 Apr 29
 
 ## requires 2 helper files
-source('mk_matind.R') # all possible combinations that lead to Robs
-source('mk_matposs.R') # the number of ways to split up n samples to get the the sizes of the numbers of strains observed
+source('mk_matind.R') # all possible combinations that admit Robs
+source('mk_matposs.R') #number of ways to split up n samples to get the the sizes of the numbers of strains observed
 
-## inputs
-# n = number of samples of each participant
-# vecn = number of participants with each number of observed specimens: vecn = c(N(Robs=1), N(Robs=2), ..., N(Robs=n))
-# alpha = superinfection parameter
+explam <- function(lam) { lam/(1-exp(-lam)) } #average of ero-truncated poisson distribution
 
+#function that computes the EM algorithm
 EM_superinfection_anym <- function(n,vecn,alpha) {
+ 
   ################## inputs ############################
-  ## n = number of samples per person, each with single winner, 
-  ##    will be 2 or 3 or larger
-  ## vecn = number of persons with 1, 2, ... n observed infections
-  ## alpha = exponential parameter
+  ## n = number of samples per person
+  ## vecn = number of persons with 1, 2, ... n observed infections N(Robs)
+  ## alpha = exponential parameter for evenness
+ 
+  #check that vecn makes sense
   if (length(vecn) > n) {print("error: more observed infections than samples")
     break}
-  N <- sum(vecn)
-  ## N2 <- vecn[2] ; if (n>2) {N3 <- vecn[3]}
-  ################## initialize ############################
-  ## start with grid search for lambda that satisfies E(K)
-  ## set reasonable range for potential values of lambda
-  ## these endpoints give range between 1 and 2 infections pp
-  ##@ lammin <- .01  ;  lammax <- 1.6
-  ## but use wider range so can explore extreme cases
-  lammin <- .01  ;  lammax <- 4
-  lamtry <- seq(lammin,lammax,by=0.001)
-  expectR <- (N+vecn[2])/N  
-  explam <- function(lam) { lam/(1-exp(-lam)) }
-  ## see which values of lam give us expectK close to observed
-  lamtest <- explam(lam=lamtry)
-  lamcurr <- lamtry[abs(lamtest-expectR)==min(abs(lamtest-expectR))]
   
-  ## need two inital values of lambda since loop depends on
-  ##   the distance between successive estimates from M step
-  lam <- lamcurr + .5
-  ## max r should be infty but just need large enough
-  ##   so that its probability gets small, # infections wont be huge
-  maxr <- 12
+  N <- sum(vecn) #total number of samples in trial
+  
+  ################## initialize ############################
+  lammin <- .01  ;  lammax <- 4  #start with unrealistically wide range of lambdas
+  lamtry <- seq(lammin,lammax,by=0.001) #make a huge list of lambdas
+  expectR <- sum((1:length(vecn))*vecn)/N #use naive MLE at first order 
+  lamtest <- explam(lam=lamtry) #use TP distribution
+  lamcurr <- lamtry[abs(lamtest-expectR)==min(abs(lamtest-expectR))] #best lambda given <R>
+  lam <- lamcurr + 0.5   # 2nd estimate to compute initial error 
+  maxr <- 12 #we are interested in relatively small richnesses in this paper
   seqr <- 1:maxr ; matr <- seqr%*%t(rep(1,n))
   
   #################### start loop ###########################
@@ -58,10 +39,7 @@ EM_superinfection_anym <- function(n,vecn,alpha) {
   while (abs(lam-lamcurr) > .001 & ntries < 50) {
     ntries <- ntries + 1
     #################### E step ##############################
-    ## first time use initialized lambda, o.w. from end of M step
-    lam <- lamcurr  
-    ## this is the new numerator using the exponential decay
-    ##   but if alpha = 0 simplifies to evenness assumption
+    lam <- lamcurr  #update lam with new value from M step
     
     ## start with the conditional probabilities of r0 given r and n true
     ## make all possibilies of true and observed numbers of strains
