@@ -7,10 +7,9 @@
 ## this time specify a different alpha from simulated
 ## pick 3 samples per each of 500 persons
 
-
 ## to use
 rm(list=ls())
-source('z://Schiffer/Reeves/EM_superinfection_anym.R')
+source('superinfection.R')
 
 ## here are the parameters you need to choose
 ##   lambda = true Poisson parameter for number of infections
@@ -25,7 +24,6 @@ lamck <- seq(.005,1,.005)
 pck <- 1 - lamck/(exp(lamck)-1)
 superuse <- c(.01,.02,.05,.1,.2,.3)  ## superinfection rates
 lamuse <- approx(x=pck,y=lamck,xout=superuse)$y
-##@ cbind(superuse,lamuse,1 - lamuse/(exp(lamuse)-1)) ## yes, works
 nuse <- 3  
 npers <- 80000
 nsimulations <- 2000 ## number of times to simulate and estimate lambda
@@ -37,7 +35,7 @@ alphause <- alphatry[alphatry >= 0]
 ## loop over simulations to estimate lambda over lamuse and alphause
 for (ll in 1:length(lamuse)) {
   for (aa in 1:length(alphause)) {
-    filename <- paste("Z://Schiffer/Reeves/res/lamest.sup",superuse[ll],".alpha",alpha,".ause",alphause[aa],".txt",sep="")
+    filename <- paste("results/lamest_sup",superuse[ll],"_alpha",alpha,"_ause",alphause[aa],".txt",sep="")
     for (nsim in 1:nsimulations) {
     ## make simulated data, use first 500 persons infected
     rinf <- rpois(n=npers,lambda=lamuse[ll])
@@ -85,11 +83,11 @@ for (ll in 1:length(lamuse)) {
     ## run to maximize lambda, see if get right one
     ## make table of vecobs that includes all possible values to nuse
     Nr0 <- table(c(vecobs,1:nuse))-rep(1,nuse)
-    anss <- EMsuperanym(n=nuse,vecn=Nr0,alpha=alphause[aa])
+    anss <- EM_superinfection_anym(n=nuse,vecn=Nr0,alpha=alphause[aa])
     lamest <- anss$lamcurr
     converged <- anss$conv
-    if (converged) { write.table(x=lamest,file=filename,append=T,
-          row.names=F,col.names=F) }
+    print(lamest)
+    write.table(x=lamest,file=filename,append=T, row.names=F,col.names=F)
     } ## end loop over nsimulations
     ##@    lammat[ll,nn] <- lamest (old version with one iteration)
   } ## end loop over number of samples to take

@@ -505,4 +505,86 @@ log(5)
 matr
 condprobs
 EM_superinfection_anym(3,c(100,10,3),0)
-EM_superinfection_anym(3,c(100,10,3),0)
+## author = amalia magaret#
+## date started = 2016 Sep 08#
+## PI = Daniel Reeves#
+## objective = run EM algorithm for determining number of true#
+##   infections from participants who got n samples each#
+## to use#
+rm(list=ls())#
+source('EM_superinfection_anym.R')
+source('superinfection.R')
+## here are the parameters you need to choose#
+lambda <- 1.4  ## true Poisson parameter for number of infections#
+alpha <- 2.2  ## exponential abundance parameter#
+n <- 5  ## let there be n samples per person#
+## make simulated data#
+rinf <- rpois(n=80000,lambda=lambda)#
+## make a table of true number of infections#
+## need to fill in zeros when rinf not contiguous#
+##  so add 1 case for every value bwtn 1 and max in the vector, #
+##    and then subtract a count of 1 for each item in the table#
+maxr <- max(rinf)#
+Nr <- table(c(rinf[rinf>0],1:maxr))-rep(1,maxr)#
+truenum <- 1:maxr#
+## vectrue is an ordered vector of numbers of strains, #
+##    one for each person, with true number of strains for each#
+##  or could just sort rinf ##@ all(vectrue==sort(rinf[rinf>0]))#
+vectrue <- rep(truenum,Nr)
+## now implement measurement error via sampling#
+## and for each person, simulate which strain detection for each sampling#
+vecobs <- rep(1,Nr[1])  ## will build on this vector#
+for (j in 2:maxr) { ## first loop over each true number of infections#
+  ## can skip j=1 because can only sample one if one true infection #
+  ## also skip if no simulated persons with that number of strains#
+  if (Nr[j] > 0) {#
+    psamp <- exp(-alpha*(1:j))/sum(exp(-alpha*(1:j)))#
+    for (inds in 1:n) { ## then loop over samples for each person#
+      detect <- rmultinom(Nr[j],size=1,psamp)#
+      ## dim(detect) ## will be length(psamp) rows by Nr[j] columns#
+      ## rbind(round(rowMeans(detect),4),round(psamp,4))#
+      ## add them up, to see which ones got detected#
+      if (inds==1) {keepdet <- detect}  else {keepdet <- keepdet + detect}#
+    }  ## at end, if above zero, detected that strain at least once#
+    everdet <- 1*(keepdet > 0)  #
+    howmanydet <- colSums(everdet)  ## how many unique strains per person#
+    vecobs <- c(vecobs,howmanydet)  ## append observed numbers of strains#
+  }#
+}
+## make a matrix of true by simulated numbers of strains#
+tabb <- table(vectrue,vecobs)#
+probsest <- tabb / rowSums(tabb)#
+## can show that this matches matprobs from EM_superinfection_anym.R#
+## need to limit to compare, since vecobs may not go as high as n#
+##  and also probsest can have a larger number of real strains than maxr#
+##@ maxr <- 6 ## use the one from EM_super...#
+##@ round(probsest[1:maxr,1:max(vecobs)],4)#
+##@ round(matprobs[,1:max(vecobs)],4)#
+##@ plot(as.vector(probsest[1:maxr,1:max(vecobs)]),as.vector(matprobs[,1:max(vecobs)]))#
+## run to maximize lambda, see if get right one#
+Nr0 <- table(c(vecobs,1:n))-rep(1,n)#
+tryit <- EM_superinfection_anym(n=n,vecn=Nr0,alpha=alpha)
+tryit
+tabb
+source('run_super_misspec_alpha.R')
+source('run_super_misspec_alpha.R')
+source('run_super_misspec_alpha.R')
+source('run_super_misspec_alpha.R')
+source('run_super_misspec_alpha.R')
+source('run_super_misspec_alpha.R')
+source('run_super_misspec_alpha.R')
+filename <- paste("res/lamest.sup",superuse[ll],".alpha",alpha,".ause",alphause[aa],".txt",sep="")
+filename
+filename
+filename <- paste("res/lamest_sup",superuse[ll],"_alpha",alpha,"_ause",alphause[aa],".txt",sep="")
+filename
+filename <- paste("res/lamest_sup",superuse[ll]*100,"_alpha",alpha,"_ause",alphause[aa],".txt",sep="")
+filename
+write.table(x=lamest,file=filename,append=T, row.names=F,col.names=F)
+source('run_super_misspec_alpha.R')
+lamest
+if (converged) { write.table(x=lamest,file=filename,append=T, row.names=F,col.names=F) }
+converged
+anss
+anss$conv
+source('run_super_misspec_alpha.R')

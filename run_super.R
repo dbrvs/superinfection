@@ -5,16 +5,14 @@
 ## objective = run EM algorithm for determining number of true
 ##   infections from participants who got n samples each
 
-
 ## to use
 rm(list=ls())
-source('EM_superinfection_anym.R')
+source('superinfection.R')
 
 ## here are the parameters you need to choose
 lambda <- 1.4  ## true Poisson parameter for number of infections
 alpha <- 2.2  ## exponential abundance parameter
 n <- 5  ## let there be n samples per person
-
 
 ## make simulated data
 rinf <- rpois(n=80000,lambda=lambda)
@@ -55,13 +53,6 @@ for (j in 2:maxr) { ## first loop over each true number of infections
 ## make a matrix of true by simulated numbers of strains
 tabb <- table(vectrue,vecobs)
 probsest <- tabb / rowSums(tabb)
-## can show that this matches matprobs from EM_superinfection_anym.R
-## need to limit to compare, since vecobs may not go as high as n
-##  and also probsest can have a larger number of real strains than maxr
-##@ maxr <- 6 ## use the one from EM_super...
-##@ round(probsest[1:maxr,1:max(vecobs)],4)
-##@ round(matprobs[,1:max(vecobs)],4)
-##@ plot(as.vector(probsest[1:maxr,1:max(vecobs)]),as.vector(matprobs[,1:max(vecobs)]))
 
 ## run to maximize lambda, see if get right one
 Nr0 <- table(c(vecobs,1:n))-rep(1,n)
