@@ -7,7 +7,7 @@
 source('mk_matind.R') # enumerate possible combinations that admit Robs
 source('mk_matposs.R') # enumerate ways to split up n samples to get the the sizes of the numbers of strains observed
 
-explam <- function(lam) { lam/(1-exp(-lam)) } #average of ero-truncated poisson distribution
+explam <- function(lam) { lam/(1-exp(-lam)) } #average of zero-truncated poisson (ZTP) distribution
 
 #function that computes the EM algorithm
 EM_superinfection_anym <- function(n,vecn,alpha) {
